@@ -312,6 +312,7 @@ public class MainPaneController implements Initializable {
             }
         }
 
+
         private List<TaskStatus> extractTaskStatus(List<Map<String, Object>> results){
             List<TaskStatus> list = new ArrayList<>();
             for(Map<String, Object> map : results){
