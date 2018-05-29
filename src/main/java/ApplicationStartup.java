@@ -14,6 +14,7 @@ import org.springframework.core.io.Resource;
 
 import java.io.*;
 import java.net.URL;
+import java.util.*;
 
 /**
  * @author Dylan Wei
@@ -24,6 +25,7 @@ public class ApplicationStartup extends Application {
         launch(args);
     }
 
+//    https://download.jetbrains.8686c.com/idea/ideaIU-2018.1.4.exe
     public void start(Stage primaryStage) throws Exception {
          URL url = new ClassPathResource("fxml/MainPane.fxml").getURL();
          FXMLLoader fxmlLoader = new FXMLLoader(url);

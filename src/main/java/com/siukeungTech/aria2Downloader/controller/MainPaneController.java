@@ -11,6 +11,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+
+import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -90,6 +92,17 @@ public class MainPaneController implements Initializable {
                         this.setGraphic(null);
                     }else{
                         Button button = new Button("打开");
+                        button.setOnMouseClicked(mouseEvent -> {
+                            String dir = leftTableItems.get(this.getIndex()).getDir();
+                            String fileName = leftTableItems.get(this.getIndex()).getFileName();
+                            ProcessBuilder processBuilder = new ProcessBuilder();
+                            processBuilder.command("cmd", "/c", "start", "explorer", "/select,", dir + "\\" + fileName);
+                            try {
+                                processBuilder.start();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        });
                         this.setGraphic(button);
                         this.setText(null);
                     }
@@ -143,11 +156,12 @@ public class MainPaneController implements Initializable {
             task.setOnSucceeded(workerStateEvent -> {
                 System.out.println("onSucceeded方法所在的线程：" + Thread.currentThread());
                 Response<String> response = task.getValue();
+                TaskStatus newTask = new TaskStatus(fileName, 0.0, 0.0, "waiting", 0.0, response.getResult(), null);
+                this.rightTableItems.add(newTask);
                 System.out.println(response);
             });
             new Thread(task).start();
         });
-
 
     }
 
@@ -283,6 +297,29 @@ public class MainPaneController implements Initializable {
             this.leftTableData = leftTableData;
         }
 
+        private void updateList(List<TaskStatus> targetList, List<TaskStatus> resultList){
+            Iterator<TaskStatus> iterator = targetList.iterator();
+            while(iterator.hasNext()){
+                TaskStatus temp1 = iterator.next();
+                int index = resultList.indexOf(temp1);
+                if(-1 != index){
+                    TaskStatus temp2 = resultList.get(index);
+                    targetList.set(targetList.indexOf(temp1), temp2);
+                }
+            }
+        }
+
+        private void moveAllComplete(List<TaskStatus> list){
+            Iterator<TaskStatus> iterator = list.iterator();
+            while(iterator.hasNext()){
+                TaskStatus taskStatus = iterator.next();
+                if(taskStatus.getStatus().equals("complete")) {
+                    iterator.remove();
+                    leftTableData.add(taskStatus);
+                }
+            }
+        }
+
         @Override
         protected Response<List> call() throws Exception {
             while(true){
@@ -302,16 +339,21 @@ public class MainPaneController implements Initializable {
                     else if(taskStatus.getStatus().equals("complete"))
                         completedList.add(taskStatus);
                 }
-                this.rightTableData.clear();
-                this.rightTableData.addAll(activeList);
-                this.rightTableData.addAll(waitingList);
-                this.rightTableData.addAll(pausedList);
-                this.leftTableData.clear();
-                this.leftTableData.addAll(completedList);
+//                this.rightTableData.clear();
+//                this.rightTableData.addAll(activeList);
+//                this.rightTableData.addAll(waitingList);
+//                this.rightTableData.addAll(pausedList);
+//                this.leftTableData.clear();
+//                this.leftTableData.addAll(completedList);
+                activeList.addAll(waitingList);
+                activeList.addAll(pausedList);
+                activeList.addAll(completedList);
+                this.updateList(this.rightTableData, activeList);
+                this.moveAllComplete(this.rightTableData);
+
                 Thread.currentThread().sleep(500);
             }
         }
-
 
         private List<TaskStatus> extractTaskStatus(List<Map<String, Object>> results){
             List<TaskStatus> list = new ArrayList<>();
@@ -325,7 +367,8 @@ public class MainPaneController implements Initializable {
                 Double progress = totalLength != 0 ? (completedLength / totalLength) : 0;
                 Double speed = Double.valueOf((String)map.get("downloadSpeed"));
                 String status = (String) map.get("status");
-                TaskStatus taskStatus = new TaskStatus(null, fileName, progress, speed, status, length,gid);
+                String dir = (String) map.get("dir");
+                TaskStatus taskStatus = new TaskStatus(fileName, progress, speed, status, length,gid, dir);
                 list.add(taskStatus);
             }
             return list;
@@ -333,7 +376,6 @@ public class MainPaneController implements Initializable {
     }
 
     public static  class TaskStatus{
-        private Integer seq;
         private String fileName;
         private Double progress;
         private Double speed;
@@ -341,19 +383,30 @@ public class MainPaneController implements Initializable {
         private Double length;
 
         private String gid;
+        private String dir;
+
+        public TaskStatus(String fileName, Double progress, Double speed, String status, Double length, String gid, String dir) {
+            this.fileName = fileName;
+            this.progress = progress;
+            this.speed = speed;
+            this.status = status;
+            this.length = length;
+            this.gid = gid;
+            this.dir = dir;
+        }
 
         @Override
-        public String toString() {
-            return "TaskStatus{" +
-                    "seq=" + seq +
-                    ", fileName='" + fileName + '\'' +
-                    ", progress=" + progress +
-                    ", speed=" + speed +
-                    ", status='" + status + '\'' +
-                    ", length=" + length +
-                    ", gid='" + gid + '\'' +
-                    '}';
+        public boolean equals(Object obj) {
+            if(obj == null)
+                return false;
+            if(obj instanceof TaskStatus){
+                return ((TaskStatus)obj).getGid().equals(this.getGid());
+            }
+            else
+                return false;
         }
+
+
 
         public Double getLength() {
             return length;
@@ -374,22 +427,25 @@ public class MainPaneController implements Initializable {
         public TaskStatus() {
         }
 
-        public TaskStatus(Integer seq, String fileName, Double progress, Double speed, String status, Double length, String gid) {
-            this.seq = seq;
-            this.fileName = fileName;
-            this.progress = progress;
-            this.speed = speed;
-            this.status = status;
-            this.length = length;
-            this.gid = gid;
+        public String getDir() {
+            return dir;
         }
 
-        public Integer getSeq() {
-            return seq;
+        public void setDir(String dir) {
+            this.dir = dir;
         }
 
-        public void setSeq(Integer seq) {
-            this.seq = seq;
+        @Override
+        public String toString() {
+            return "TaskStatus{" +
+                    "fileName='" + fileName + '\'' +
+                    ", progress=" + progress +
+                    ", speed=" + speed +
+                    ", status='" + status + '\'' +
+                    ", length=" + length +
+                    ", gid='" + gid + '\'' +
+                    ", dir='" + dir + '\'' +
+                    '}';
         }
 
         public String getFileName() {
