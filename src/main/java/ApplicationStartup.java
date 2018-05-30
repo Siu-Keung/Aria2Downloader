@@ -1,4 +1,7 @@
 import com.alibaba.fastjson.JSONObject;
+import com.pepperonas.fxiconics.FxIconicsLabel;
+import com.pepperonas.fxiconics.awf.FxFontAwesome;
+import com.pepperonas.fxiconics.gmd.FxFontGoogleMaterial;
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -7,6 +10,11 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.LabelBuilder;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.springframework.core.io.ClassPathResource;
@@ -22,7 +30,8 @@ import java.util.*;
  */
 public class ApplicationStartup extends Application {
     public static void main(String[] args){
-        launch(args);
+        Application.setUserAgentStylesheet(STYLESHEET_MODENA);
+        Application.launch(args);
     }
 
 //    https://download.jetbrains.8686c.com/idea/ideaIU-2018.1.4.exe
@@ -32,8 +41,21 @@ public class ApplicationStartup extends Application {
          primaryStage.setScene(new Scene((Parent) fxmlLoader.load()));
          primaryStage.setOnShowing(new AppInitializer());
          primaryStage.setOnCloseRequest(new PreClosedHandler());
+         primaryStage.setResizable(false);
+         primaryStage.setWidth(850);
+         primaryStage.setHeight(500);
+         primaryStage.setOnCloseRequest(windowEvent -> {
+             ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "taskkill", "/f", "/im", "aria2c.exe");
+             try {
+                 pb.start();
+             } catch (IOException e) {
+                 e.printStackTrace();
+             }
+         });
 
          primaryStage.show();
+
+
 
     }
 
@@ -41,6 +63,7 @@ public class ApplicationStartup extends Application {
         private static String workPath = System.getProperty("user.home") + "/aria2Downloader";
         private static File aria2c = null;
         private static File config = null;
+        private static File hideRun = null;
 
         @Override
         public void handle(WindowEvent event) {
@@ -52,7 +75,8 @@ public class ApplicationStartup extends Application {
                 copyAria2ToUserFolder();
                 String aria2Path = aria2c.getCanonicalPath();
                 String configPath = config.getCanonicalPath();
-                ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", aria2Path, "--conf=" + configPath);
+//                ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", aria2Path, "--conf=" + configPath);
+                ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "wscript", hideRun.getCanonicalPath());
                 Process aria2 = processBuilder.start();
                 aria2Process = aria2;
             } catch (IOException e) {
@@ -63,9 +87,9 @@ public class ApplicationStartup extends Application {
 
         private void copyAria2ToUserFolder() throws IOException {
             File directory = new File(workPath);
-//            directory.mkdir();
             FileOutputStream aria2cOut = null;
             FileOutputStream configOut = null;
+            FileOutputStream hideRunOut = null;
             try {
                 // 复制文件到工作目录
                 BufferedInputStream aria2cIn = new BufferedInputStream(
@@ -78,6 +102,7 @@ public class ApplicationStartup extends Application {
                 while(((length = aria2cIn.read(data)) != -1)){
                     aria2cOut.write(data, 0, length);
                 }
+
                 BufferedInputStream configIn = new BufferedInputStream(
                         getClass().getResourceAsStream("/aria2/aria2.conf"));
                 File configFile = new File(directory + "/aria2.conf");
@@ -86,9 +111,17 @@ public class ApplicationStartup extends Application {
                 while((length = configIn.read(data)) != -1){
                     configOut.write(data, 0, length);
                 }
+
+                File hideRunFile = new File(directory + "/HideRun.vbs");
+                hideRun = hideRunFile;
+                hideRunOut = new FileOutputStream(hideRunFile);
+                String vbsCommand = "CreateObject(\"WScript.Shell\").Run \""
+                        + aria2cFile.getCanonicalPath() + " --conf-path=" + configFile.getCanonicalPath() + "\",0";
+                hideRunOut.write(vbsCommand.getBytes());
             }finally {
                 aria2cOut.close();
                 configOut.close();
+                hideRunOut.close();
             }
 
         }

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="450.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.siukeungTech.aria2Downloader.controller.MainPaneController">
+<AnchorPane prefHeight="500.0" prefWidth="850.0" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.siukeungTech.aria2Downloader.controller.MainPaneController">
    <children>
-      <MenuBar layoutY="2.0" prefHeight="25.0" prefWidth="800.0">
+      <MenuBar disable="true" layoutY="2.0" prefHeight="25.0" prefWidth="850.0">
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
@@ -27,22 +29,22 @@
           </Menu>
         </menus>
       </MenuBar>
-      <TableView fx:id="tasksTable" layoutX="200.0" layoutY="53.0" prefHeight="396.0" prefWidth="600.0">
+      <TableView fx:id="tasksTable" layoutX="206.0" layoutY="60.0" pickOnBounds="false" prefHeight="440.0" prefWidth="644.0">
         <columns>
           <TableColumn fx:id="seqCol" prefWidth="59.0" text="序号" />
-          <TableColumn fx:id="fileNameCol" prefWidth="140.0" text="文件名" />
-            <TableColumn fx:id="progressCol" prefWidth="189.0" text="进度" />
-            <TableColumn fx:id="speedCol" prefWidth="85.0" text="下载速度" />
-            <TableColumn fx:id="statusCol" minWidth="0.0" prefWidth="67.0" text="状态" />
-            <TableColumn fx:id="operationCol" prefWidth="59.0" text="操作" />
+          <TableColumn fx:id="fileNameCol" prefWidth="153.0" text="文件名" />
+            <TableColumn fx:id="progressCol" prefWidth="195.0" text="进度" />
+            <TableColumn fx:id="speedCol" prefWidth="102.0" text="下载速度" />
+            <TableColumn fx:id="statusCol" minWidth="0.0" prefWidth="73.0" text="状态" />
+            <TableColumn fx:id="operationCol" prefWidth="61.0" text="操作" />
         </columns>
       </TableView>
-      <Button fx:id="createTaskButton" layoutX="200.0" layoutY="27.0" mnemonicParsing="false" onMouseClicked="#onCreateTaskButtonClicked" text="Add" />
-      <TableView fx:id="leftTable" layoutY="27.0" prefHeight="423.0" prefWidth="199.0">
+      <Button fx:id="createTaskButton" layoutX="209.0" layoutY="30.0" mnemonicParsing="false" onMouseClicked="#onCreateTaskButtonClicked" styleClass="myButton" text="Add" textAlignment="CENTER" />
+      <TableView fx:id="leftTable" layoutY="27.0" prefHeight="473.0" prefWidth="206.0">
         <columns>
-          <TableColumn fx:id="fileNameCol2" prefWidth="95.0" text="文件名" />
-            <TableColumn fx:id="lengthCol" prefWidth="58.0" text="大小" />
-            <TableColumn fx:id="operationCol2" prefWidth="45.0" text="操作" />
+          <TableColumn fx:id="fileNameCol2" prefWidth="102.0" text="文件名" />
+            <TableColumn fx:id="lengthCol" prefWidth="56.0" text="大小" />
+            <TableColumn fx:id="operationCol2" prefWidth="47.0" text="操作" />
         </columns>
       </TableView>
    </children>

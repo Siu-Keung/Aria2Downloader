@@ -37,9 +37,9 @@ public class AppService {
 
     private Response sendRequest(Request request){
         request.setId(UUID.randomUUID().toString());
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8888));
+//        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8888));
         try {
-            HttpURLConnection connection = (HttpURLConnection) this.url.openConnection(proxy);
+            HttpURLConnection connection = (HttpURLConnection) this.url.openConnection();
             connection.setDoOutput(true);
 
             String jsonRequest = JSON.toJSONString(request);

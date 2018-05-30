@@ -1,5 +1,9 @@
 package com.siukeungTech.aria2Downloader.controller;
 
+import com.pepperonas.fxiconics.FxIconicsButton;
+import com.pepperonas.fxiconics.FxIconicsLabel;
+import com.pepperonas.fxiconics.awf.FxFontAwesome;
+import com.pepperonas.fxiconics.gmd.FxFontGoogleMaterial;
 import com.siukeungTech.aria2Downloader.customControl.AddTaskDialog;
 import com.siukeungTech.aria2Downloader.dto.Response;
 import com.siukeungTech.aria2Downloader.service.AppService;
@@ -8,9 +12,12 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,16 +59,6 @@ public class MainPaneController implements Initializable {
         this.fileNameCol2.setCellValueFactory(new PropertyValueFactory<>("fileName"));
         this.lengthCol.setCellValueFactory(new PropertyValueFactory<>("length"));
 
-        this.leftTable.setRowFactory(table -> {
-            return new TableRow(){
-                @Override
-                protected void updateItem(Object item, boolean empty) {
-                    super.updateItem(item, empty);
-                    this.setBackground(null);
-                }
-            };
-        });
-
         this.lengthCol.setCellFactory(col -> {
             TableCell cell = new TableCell(){
                 @Override
@@ -91,8 +88,8 @@ public class MainPaneController implements Initializable {
                         this.setText(null);
                         this.setGraphic(null);
                     }else{
-                        Button button = new Button("打开");
-                        button.setOnMouseClicked(mouseEvent -> {
+                        Label label = (Label) new FxIconicsLabel.Builder(FxFontAwesome.Icons.faw_folder_open).size(15).build();
+                        label.setOnMouseClicked(mouseEvent -> {
                             String dir = leftTableItems.get(this.getIndex()).getDir();
                             String fileName = leftTableItems.get(this.getIndex()).getFileName();
                             ProcessBuilder processBuilder = new ProcessBuilder();
@@ -103,8 +100,9 @@ public class MainPaneController implements Initializable {
                                 e.printStackTrace();
                             }
                         });
-                        this.setGraphic(button);
+                        this.setGraphic(label);
                         this.setText(null);
+                        this.setAlignment(Pos.CENTER);
                     }
                 }
             };
@@ -165,8 +163,14 @@ public class MainPaneController implements Initializable {
 
     }
 
+    private void initializeButtons(){
+        createTaskButton.setGraphic(new FxIconicsLabel.Builder(FxFontAwesome.Icons.faw_plus).size(12).build());
+        System.out.println(new FxIconicsLabel.Builder(FxFontAwesome.Icons.faw_plus).size(12).build().getClass());
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        initializeButtons();
         initializeLeftTable();
         initializeRightTable();
 
@@ -249,11 +253,12 @@ public class MainPaneController implements Initializable {
                         this.setText(null);
                         this.setGraphic(null);
                     }else{
+                        this.setAlignment(Pos.CENTER);
                         this.setText(null);
                         if(item.equals("active")){
-                            Button button = new Button("暂停");
-                            this.setGraphic(button);
-                            button.setOnMouseClicked(mouseEvent -> {
+                            Label label = (Label) new FxIconicsLabel.Builder(FxFontAwesome.Icons.faw_pause).size(16).build();
+                            this.setGraphic(label);
+                            label.setOnMouseClicked(mouseEvent -> {
                                 String gid = rightTableItems.get(this.getIndex()).getGid();
                                 Task<Response<String>> task = new Task<Response<String>>() {
                                     @Override
@@ -265,9 +270,9 @@ public class MainPaneController implements Initializable {
                                 new Thread(task).start();
                             });
                         }else if(item.equals("paused")){
-                            Button button = new Button("开始");
-                            this.setGraphic(button);
-                            button.setOnMouseClicked(mouseEvent -> {
+                            Label label = (Label)new FxIconicsLabel.Builder(FxFontAwesome.Icons.faw_play).size(16).build();
+                            this.setGraphic(label);
+                            label.setOnMouseClicked(mouseEvent -> {
                                 String gid = rightTableItems.get(this.getIndex()).getGid();
                                 Task<Response<String>> task = new Task<Response<String>>() {
                                     @Override
